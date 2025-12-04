@@ -102,41 +102,90 @@ namespace ApmTracker
         {
             try
             {
+                if (string.IsNullOrEmpty(downloadUrl))
+                {
+                    System.Diagnostics.Debug.WriteLine("UpdateManager: Download URL is empty");
+                    return false;
+                }
+
                 var tempPath = Path.Combine(Path.GetTempPath(), $"ApmTracker_{version}.exe");
                 
+                System.Diagnostics.Debug.WriteLine($"UpdateManager: Downloading from {downloadUrl} to {tempPath}");
+                
                 using (var response = await HttpClient.GetAsync(downloadUrl))
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
                 {
-                    await response.Content.CopyToAsync(fileStream);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"UpdateManager: Download failed with status {response.StatusCode}");
+                        return false;
+                    }
+                    
+                    using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                    {
+                        await response.Content.CopyToAsync(fileStream);
+                    }
+                }
+
+                if (!File.Exists(tempPath))
+                {
+                    System.Diagnostics.Debug.WriteLine("UpdateManager: Downloaded file does not exist");
+                    return false;
                 }
 
                 var currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? 
                                 System.Reflection.Assembly.GetExecutingAssembly().Location;
+                
+                if (string.IsNullOrEmpty(currentExe) || !File.Exists(currentExe))
+                {
+                    System.Diagnostics.Debug.WriteLine($"UpdateManager: Current EXE path is invalid: {currentExe}");
+                    return false;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"UpdateManager: Current EXE: {currentExe}");
+                System.Diagnostics.Debug.WriteLine($"UpdateManager: New EXE: {tempPath}");
+
                 var updateScript = Path.Combine(Path.GetTempPath(), "ApmTracker_Update.bat");
                 
                 var scriptContent = $@"@echo off
+chcp 65001 >nul
 timeout /t 2 /nobreak >nul
 taskkill /F /IM ApmTracker.exe 2>nul
-timeout /t 1 /nobreak >nul
-copy /Y ""{tempPath}"" ""{currentExe}"" >nul
-start """" ""{currentExe}""
-del ""{tempPath}""
-del ""%~f0""
+timeout /t 2 /nobreak >nul
+if exist ""{tempPath}"" (
+    if exist ""{currentExe}"" (
+        copy /Y ""{tempPath}"" ""{currentExe}"" >nul 2>&1
+        if %ERRORLEVEL% EQU 0 (
+            start """" ""{currentExe}""
+            timeout /t 1 /nobreak >nul
+            del ""{tempPath}"" >nul 2>&1
+        )
+    )
+)
+del ""%~f0"" >nul 2>&1
 ";
-                File.WriteAllText(updateScript, scriptContent);
+                File.WriteAllText(updateScript, scriptContent, System.Text.Encoding.UTF8);
 
-                Process.Start(new ProcessStartInfo
+                System.Diagnostics.Debug.WriteLine($"UpdateManager: Starting update script: {updateScript}");
+
+                var processStartInfo = new ProcessStartInfo
                 {
                     FileName = updateScript,
                     UseShellExecute = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                });
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true
+                };
+                
+                Process.Start(processStartInfo);
 
+                System.Diagnostics.Debug.WriteLine("UpdateManager: Update script started, shutting down application");
+                
+                await Task.Delay(500);
                 Application.Current.Shutdown();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"UpdateManager: Exception during update: {ex.Message}\n{ex.StackTrace}");
                 return false;
             }
         }

@@ -1006,6 +1006,16 @@ namespace ApmTracker
         {
             try
             {
+                if (string.IsNullOrEmpty(updateInfo.DownloadUrl))
+                {
+                    System.Windows.MessageBox.Show(
+                        "Download URL is missing. Please download manually from GitHub.",
+                        "Update Failed",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+
                 var result = System.Windows.MessageBox.Show(
                     $"Downloading update v{updateInfo.Version}...\n\n" +
                     "The application will close and restart after installation.",
@@ -1020,7 +1030,9 @@ namespace ApmTracker
                 if (!success)
                 {
                     System.Windows.MessageBox.Show(
-                        "Failed to install update. Please download manually from GitHub.",
+                        $"Failed to install update.\n\n" +
+                        $"Please download manually from:\n" +
+                        $"https://github.com/justinjd00/APMTracker/releases/latest",
                         "Update Failed",
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Error);
@@ -1029,7 +1041,9 @@ namespace ApmTracker
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    $"Error installing update: {ex.Message}",
+                    $"Error installing update:\n\n{ex.Message}\n\n" +
+                    $"Please download manually from:\n" +
+                    $"https://github.com/justinjd00/APMTracker/releases/latest",
                     "Update Error",
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
