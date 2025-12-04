@@ -98,17 +98,29 @@ namespace ApmTracker
             );
         }
 
-        public static async Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, string version)
+        public static async Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, string version, IProgress<string> progress = null)
         {
             try
             {
                 if (string.IsNullOrEmpty(downloadUrl))
                 {
-                    System.Diagnostics.Debug.WriteLine("UpdateManager: Download URL is empty");
+                    progress?.Report("Error: Download URL is empty");
                     return false;
                 }
 
-                var tempPath = Path.Combine(Path.GetTempPath(), $"ApmTracker_{version}.exe");
+                progress?.Report("Downloading update...");
+                
+                var currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? 
+                                System.Reflection.Assembly.GetExecutingAssembly().Location;
+                
+                if (string.IsNullOrEmpty(currentExe) || !File.Exists(currentExe))
+                {
+                    progress?.Report("Error: Invalid current EXE path");
+                    return false;
+                }
+
+                var currentDir = Path.GetDirectoryName(currentExe);
+                var tempPath = Path.Combine(currentDir, $"ApmTracker_{version}_new.exe");
                 
                 System.Diagnostics.Debug.WriteLine($"UpdateManager: Downloading from {downloadUrl} to {tempPath}");
                 
@@ -116,9 +128,11 @@ namespace ApmTracker
                 {
                     if (!response.IsSuccessStatusCode)
                     {
-                        System.Diagnostics.Debug.WriteLine($"UpdateManager: Download failed with status {response.StatusCode}");
+                        progress?.Report($"Error: Download failed ({response.StatusCode})");
                         return false;
                     }
+                    
+                    progress?.Report("Installing update...");
                     
                     using (var fileStream = new FileStream(tempPath, FileMode.Create))
                     {
@@ -128,27 +142,17 @@ namespace ApmTracker
 
                 if (!File.Exists(tempPath))
                 {
-                    System.Diagnostics.Debug.WriteLine("UpdateManager: Downloaded file does not exist");
+                    progress?.Report("Error: Downloaded file not found");
                     return false;
                 }
 
-                var currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? 
-                                System.Reflection.Assembly.GetExecutingAssembly().Location;
-                
-                if (string.IsNullOrEmpty(currentExe) || !File.Exists(currentExe))
-                {
-                    System.Diagnostics.Debug.WriteLine($"UpdateManager: Current EXE path is invalid: {currentExe}");
-                    return false;
-                }
-
-                System.Diagnostics.Debug.WriteLine($"UpdateManager: Current EXE: {currentExe}");
-                System.Diagnostics.Debug.WriteLine($"UpdateManager: New EXE: {tempPath}");
+                progress?.Report("Restarting application...");
 
                 var updateScript = Path.Combine(Path.GetTempPath(), "ApmTracker_Update.bat");
                 
                 var scriptContent = $@"@echo off
 chcp 65001 >nul
-timeout /t 2 /nobreak >nul
+timeout /t 1 /nobreak >nul
 taskkill /F /IM ApmTracker.exe 2>nul
 timeout /t 2 /nobreak >nul
 if exist ""{tempPath}"" (
@@ -179,13 +183,14 @@ del ""%~f0"" >nul 2>&1
 
                 System.Diagnostics.Debug.WriteLine("UpdateManager: Update script started, shutting down application");
                 
-                await Task.Delay(500);
+                await Task.Delay(1000);
                 Application.Current.Shutdown();
                 return true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"UpdateManager: Exception during update: {ex.Message}\n{ex.StackTrace}");
+                progress?.Report($"Error: {ex.Message}");
                 return false;
             }
         }

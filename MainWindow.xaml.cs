@@ -1016,19 +1016,62 @@ namespace ApmTracker
                     return;
                 }
 
-                var result = System.Windows.MessageBox.Show(
-                    $"Downloading update v{updateInfo.Version}...\n\n" +
-                    "The application will close and restart after installation.",
-                    "Installing Update",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Information);
+                UpdateLoadingOverlay.Visibility = Visibility.Visible;
+                UpdateVersionText.Text = $"v{updateInfo.Version}";
+                UpdateStatusText.Text = "Downloading update...";
+
+                var rotateAnimation = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 360,
+                    Duration = TimeSpan.FromSeconds(2),
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+
+                var updateIconTransform = FindName("UpdateIconRotate") as RotateTransform;
+                if (updateIconTransform == null)
+                {
+                    var grid = UpdateLoadingOverlay.Child as System.Windows.Controls.Grid;
+                    var border = grid?.Children[0] as System.Windows.Controls.Border;
+                    var stackPanel = border?.Child as System.Windows.Controls.StackPanel;
+                    var iconTextBlock = stackPanel?.Children[0] as System.Windows.Controls.TextBlock;
+                    if (iconTextBlock?.RenderTransform is RotateTransform rt)
+                    {
+                        updateIconTransform = rt;
+                    }
+                    else if (iconTextBlock != null)
+                    {
+                        updateIconTransform = new RotateTransform();
+                        iconTextBlock.RenderTransform = updateIconTransform;
+                    }
+                }
+                
+                if (updateIconTransform != null)
+                {
+                    updateIconTransform.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
+                }
+
+                var progress = new Progress<string>(status =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        UpdateStatusText.Text = status;
+                    });
+                });
 
                 var success = await UpdateManager.DownloadAndInstallUpdateAsync(
                     updateInfo.DownloadUrl, 
-                    updateInfo.Version);
+                    updateInfo.Version,
+                    progress);
 
                 if (!success)
                 {
+                    UpdateLoadingOverlay.Visibility = Visibility.Collapsed;
+                    if (updateIconTransform != null)
+                    {
+                        updateIconTransform.BeginAnimation(RotateTransform.AngleProperty, null);
+                    }
+
                     System.Windows.MessageBox.Show(
                         $"Failed to install update.\n\n" +
                         $"Please download manually from:\n" +
@@ -1040,6 +1083,7 @@ namespace ApmTracker
             }
             catch (Exception ex)
             {
+                UpdateLoadingOverlay.Visibility = Visibility.Collapsed;
                 System.Windows.MessageBox.Show(
                     $"Error installing update:\n\n{ex.Message}\n\n" +
                     $"Please download manually from:\n" +

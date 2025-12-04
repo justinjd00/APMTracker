@@ -992,5 +992,43 @@
                 <TextBlock x:Name="StreamerPeakApmText" Visibility="Collapsed"/>
             </Grid>
         </Border>
+
+        <!-- Update Loading Overlay -->
+        <Border x:Name="UpdateLoadingOverlay" 
+                Panel.ZIndex="100"
+                Background="#80000000"
+                Visibility="Collapsed">
+            <Grid>
+                <Border Background="{StaticResource BackgroundDarkBrush}"
+                        CornerRadius="20"
+                        Padding="40"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="⬇" 
+                                   FontSize="48" 
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource AccentCyanBrush}"
+                                   Margin="0,0,0,20">
+                            <TextBlock.RenderTransform>
+                                <RotateTransform x:Name="UpdateIconRotate" Angle="0"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+                        <TextBlock x:Name="UpdateStatusText"
+                                   Text="Downloading update..."
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,10"/>
+                        <TextBlock x:Name="UpdateVersionText"
+                                   Text=""
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
