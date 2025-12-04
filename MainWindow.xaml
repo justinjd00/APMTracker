@@ -768,7 +768,7 @@
                 <TextBlock Grid.Row="8" 
                            FontSize="10" 
                            HorizontalAlignment="Center"
-                           Margin="0,20,0,10"
+                           Margin="0,20,0,30"
                            Opacity="0.7">
                     <TextBlock.Inlines>
                         <Run Text="Made by " Foreground="{StaticResource TextSecondaryBrush}"/>
