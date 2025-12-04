@@ -1,0 +1,993 @@
+<Window x:Class="ApmTracker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="APM Tracker" 
+        Height="1110" Width="650"
+
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Topmost="True"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    
+    <Window.Resources>
+        <!-- Farben -->
+        <Color x:Key="BackgroundDark">#1a1a2e</Color>
+        <Color x:Key="BackgroundMedium">#16213e</Color>
+        <Color x:Key="AccentCyan">#00fff5</Color>
+        <Color x:Key="AccentPink">#ff2e63</Color>
+        <Color x:Key="AccentPurple">#9d4edd</Color>
+        <Color x:Key="AccentOrange">#ff9f1c</Color>
+        <Color x:Key="TextPrimary">#edf2f4</Color>
+        <Color x:Key="TextSecondary">#8d99ae</Color>
+        
+        <SolidColorBrush x:Key="BackgroundDarkBrush" Color="{StaticResource BackgroundDark}"/>
+        <SolidColorBrush x:Key="BackgroundMediumBrush" Color="{StaticResource BackgroundMedium}"/>
+        <SolidColorBrush x:Key="AccentCyanBrush" Color="{StaticResource AccentCyan}"/>
+        <SolidColorBrush x:Key="AccentPinkBrush" Color="{StaticResource AccentPink}"/>
+        <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurple}"/>
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+
+        <!-- ComboBox Dark Style -->
+        <Style x:Key="DarkComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#1a1a2e"/>
+            <Setter Property="Foreground" Value="#edf2f4"/>
+            <Setter Property="BorderBrush" Value="#00fff5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="Border" 
+                                    Background="#1a1a2e" 
+                                    BorderBrush="#00fff5" 
+                                    BorderThickness="1" 
+                                    CornerRadius="5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0" 
+                                                      Margin="10,5"
+                                                      VerticalAlignment="Center"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+                                    <ToggleButton Grid.Column="1" 
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  Background="Transparent"
+                                                  BorderThickness="0">
+                                        <TextBlock Text="▼" Foreground="#00fff5" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+                            <Popup IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                   Placement="Bottom"
+                                   AllowsTransparency="True">
+                                <Border Background="#1a1a2e" 
+                                        BorderBrush="#00fff5" 
+                                        BorderThickness="1"
+                                        CornerRadius="5"
+                                        Margin="0,2,0,0">
+                                    <ScrollViewer MaxHeight="200">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style x:Key="DarkComboBoxItem" TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#1a1a2e"/>
+            <Setter Property="Foreground" Value="#edf2f4"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Bd" 
+                                Background="{TemplateBinding Background}" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#00fff5"/>
+                                <Setter Property="Foreground" Value="#1a1a2e"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#16213e"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentCyanBrush}"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource AccentCyan}" Opacity="0.2"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource AccentCyan}" Opacity="0.4"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Normal Mode Layout -->
+        <Border x:Name="NormalModeContainer" Panel.ZIndex="0" 
+            CornerRadius="20" 
+            Background="{StaticResource BackgroundDarkBrush}"
+            Padding="20"
+            Margin="25"    >
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.5" Color="#00fff5"/>
+            </Border.Effect>
+                <Grid Margin="25">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="⚡" FontSize="24" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="APM TRACKER" 
+                                   FontSize="18" 
+                                   FontWeight="Bold" 
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button x:Name="StreamerModeButton" 
+                                Content="📺" 
+                                ToolTip="Streamer Mode"
+                                Width="30" Height="30" 
+                                Padding="0"
+                                Style="{StaticResource ModernButton}"
+                                BorderBrush="{StaticResource AccentOrangeBrush}"
+                                Click="StreamerModeButton_Click"/>
+                        <Button x:Name="UpdateButton" 
+                                Content="⬆" 
+                                Width="30" Height="30" 
+                                Padding="0"
+                                Margin="8,0,0,0"
+                                Style="{StaticResource ModernButton}"
+                                BorderBrush="{StaticResource AccentCyanBrush}"
+                                ToolTip="Check for updates"
+                                Click="UpdateButton_Click"
+                                Visibility="Collapsed"/>
+                        <Button Content="─" 
+                                Width="30" Height="30" 
+                                Padding="0"
+                                Margin="8,0,0,0"
+                                Style="{StaticResource ModernButton}"
+                                Click="MinimizeButton_Click"/>
+                        <Button Content="✕" 
+                                Width="30" Height="30" 
+                                Padding="0"
+                                Margin="8,0,0,0"
+                                Style="{StaticResource ModernButton}"
+                                BorderBrush="{StaticResource AccentPinkBrush}"
+                                Click="CloseButton_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Haupt-APM Anzeige -->
+                <Border Grid.Row="1" 
+                        Margin="0,20,0,0" 
+                        Padding="20"
+                        CornerRadius="15"
+                        Background="{StaticResource BackgroundMediumBrush}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="AKTUELLE APM" 
+                                   FontSize="12" 
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock x:Name="CurrentApmText" 
+                                   Text="0" 
+                                   FontSize="72" 
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center">
+                            <TextBlock.Foreground>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="{StaticResource AccentCyan}" Offset="0"/>
+                                    <GradientStop Color="{StaticResource AccentPurple}" Offset="1"/>
+                                </LinearGradientBrush>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                        <TextBlock Text="Aktionen pro Minute" 
+                                   FontSize="11" 
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Statistiken Grid -->
+                <Grid Grid.Row="2" Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Peak APM -->
+                    <Border Grid.Column="0" 
+                            Margin="0,0,5,0" 
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="{StaticResource BackgroundMediumBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="🔥" FontSize="16" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="PeakApmText" 
+                                       Text="0" 
+                                       FontSize="24" 
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AccentPinkBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Peak" 
+                                       FontSize="10" 
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Durchschnitt APM -->
+                    <Border Grid.Column="1" 
+                            Margin="5,0,5,0" 
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="{StaticResource BackgroundMediumBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="📊" FontSize="16" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="AvgApmText" 
+                                       Text="0" 
+                                       FontSize="24" 
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AccentPurpleBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Ø APM" 
+                                       FontSize="10" 
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Total Aktionen -->
+                    <Border Grid.Column="2" 
+                            Margin="5,0,0,0" 
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="{StaticResource BackgroundMediumBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="🎯" FontSize="16" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TotalActionsText" 
+                                       Text="0" 
+                                       FontSize="24" 
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AccentCyanBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Total" 
+                                       FontSize="10" 
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Details Section -->
+                <Border Grid.Row="3" 
+                        Margin="0,15,0,0" 
+                        Padding="15"
+                        CornerRadius="10"
+                        Background="{StaticResource BackgroundMediumBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="DETAILS" 
+                                   FontSize="11" 
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,10"/>
+
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <!-- Tastatur -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="⌨️" FontSize="16" VerticalAlignment="Center"/>
+                                <TextBlock Text="Tastatur" 
+                                           Grid.Column="1" 
+                                           Margin="10,0" 
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock x:Name="KeyboardActionsText" 
+                                           Text="0" 
+                                           Grid.Column="2"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccentCyanBrush}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Maus -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🖱️" FontSize="16" VerticalAlignment="Center"/>
+                                <TextBlock Text="Maus" 
+                                           Grid.Column="1" 
+                                           Margin="10,0" 
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock x:Name="MouseActionsText" 
+                                           Text="0" 
+                                           Grid.Column="2"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccentPinkBrush}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Session Zeit -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="⏱️" FontSize="16" VerticalAlignment="Center"/>
+                                <TextBlock Text="Session" 
+                                           Grid.Column="1" 
+                                           Margin="10,0" 
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock x:Name="SessionTimeText" 
+                                           Text="00:00:00" 
+                                           Grid.Column="2"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccentPurpleBrush}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Font Auswahl für Streamer Mode -->
+                <Border Grid.Row="4" 
+                        Margin="0,15,0,0" 
+                        Padding="12"
+                        CornerRadius="10"
+                        Background="{StaticResource BackgroundMediumBrush}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="🔤 Streamer Font:" 
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                        <ComboBox x:Name="FontComboBox" 
+                                  Grid.Column="1"
+                                  SelectionChanged="FontComboBox_SelectionChanged"
+                                  Style="{StaticResource DarkComboBox}">
+                            <!-- Gaming/Futuristic -->
+                            <ComboBoxItem Tag="pack://application:,,,/Fonts/#Orbitron" IsSelected="True" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Orbitron" FontFamily="pack://application:,,,/Fonts/#Orbitron" FontSize="14"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Impact" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Impact" FontFamily="Impact" FontSize="14"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Arial Black" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Arial Black" FontFamily="Arial Black" FontSize="14"/>
+                            </ComboBoxItem>
+                            <!-- Monospace/Tech -->
+                            <ComboBoxItem Tag="Consolas" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Consolas" FontFamily="Consolas" FontSize="14"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Courier New" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Courier New" FontFamily="Courier New" FontSize="14"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Lucida Console" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Lucida Console" FontFamily="Lucida Console" FontSize="14"/>
+                            </ComboBoxItem>
+                            <!-- Modern/Clean -->
+                            <ComboBoxItem Tag="Segoe UI Black" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Segoe UI Black" FontFamily="Segoe UI Black" FontSize="14"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Segoe UI" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Segoe UI" FontFamily="Segoe UI" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Verdana" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Verdana" FontFamily="Verdana" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Tahoma" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Tahoma" FontFamily="Tahoma" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Trebuchet MS" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Trebuchet MS" FontFamily="Trebuchet MS" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <!-- Classic/Decorative -->
+                            <ComboBoxItem Tag="Georgia" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Georgia" FontFamily="Georgia" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Times New Roman" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Times New Roman" FontFamily="Times New Roman" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Palatino Linotype" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Palatino Linotype" FontFamily="Palatino Linotype" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <!-- Fun/Casual -->
+                            <ComboBoxItem Tag="Comic Sans MS" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Comic Sans MS" FontFamily="Comic Sans MS" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Ink Free" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Ink Free" FontFamily="Ink Free" FontSize="14" FontWeight="Bold"/>
+                            </ComboBoxItem>
+                            <!-- System/Special -->
+                            <ComboBoxItem Tag="Bahnschrift" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Bahnschrift" FontFamily="Bahnschrift" FontSize="14"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Cascadia Code" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Cascadia Code" FontFamily="Cascadia Code" FontSize="14"/>
+                            </ComboBoxItem>
+                            <ComboBoxItem Tag="Franklin Gothic Medium" Style="{StaticResource DarkComboBoxItem}">
+                                <TextBlock Text="Franklin Gothic" FontFamily="Franklin Gothic Medium" FontSize="14"/>
+                            </ComboBoxItem>
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <!-- Click Sound Settings -->
+                <Border Grid.Row="5" 
+                        Margin="0,15,0,0" 
+                        Padding="12"
+                        CornerRadius="10"
+                        Background="{StaticResource BackgroundMediumBrush}">
+                    <StackPanel>
+                        <!-- Sound Aktivierung & Auswahl -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox x:Name="ClickSoundCheckbox" 
+                                      Content="🔊 Klick-Sound:" 
+                                      Foreground="{StaticResource TextPrimaryBrush}"
+                                      VerticalAlignment="Center"
+                                      Margin="0,0,10,0"
+                                      Checked="ClickSoundCheckbox_Changed"
+                                      Unchecked="ClickSoundCheckbox_Changed"/>
+                            <ComboBox x:Name="ClickSoundComboBox" 
+                                      Grid.Column="1"
+                                      SelectionChanged="ClickSoundComboBox_SelectionChanged"
+                                      Style="{StaticResource DarkComboBox}">
+                                <!-- Wird dynamisch gefüllt -->
+                            </ComboBox>
+                        </Grid>
+                        <!-- Sounds Ordner Button -->
+                        <Button Content="📁 Sounds-Ordner öffnen (eigene WAV/MP3 hinzufügen)"
+                                Margin="0,8,0,0"
+                                Padding="8,5"
+                                FontSize="11"
+                                Style="{StaticResource ModernButton}"
+                                BorderBrush="{StaticResource AccentOrangeBrush}"
+                                Click="OpenSoundsFolder_Click"/>
+                        
+                        <!-- Lautstärke Slider -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="🔈" 
+                                       FontSize="14" 
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <Slider x:Name="VolumeSlider" 
+                                    Grid.Column="1"
+                                    Minimum="0" 
+                                    Maximum="100" 
+                                    Value="50"
+                                    VerticalAlignment="Center"
+                                    ValueChanged="VolumeSlider_ValueChanged"/>
+                            <TextBlock x:Name="VolumeText" 
+                                       Grid.Column="2"
+                                       Text="50%" 
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- APM Farben Einstellungen -->
+                <Border Grid.Row="6" 
+                        Margin="0,15,0,0" 
+                        Padding="12"
+                        CornerRadius="10"
+                        Background="{StaticResource BackgroundMediumBrush}">
+                    <StackPanel>
+                        <TextBlock Text="🎨 APM Farben:" 
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,10"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Linke Spalte -->
+                            <Grid Grid.Column="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="70"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Normal (0-99) -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Normal (0-99):" 
+                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,5,10,5"/>
+                                <TextBox x:Name="ApmColorNormalText" 
+                                         Grid.Row="0" Grid.Column="1" 
+                                         Text="FFFFFF" 
+                                         VerticalAlignment="Center"
+                                         Margin="0,5,10,5"
+                                         TextChanged="ApmColorText_Changed"/>
+                                <Border x:Name="ApmColorNormalPreview" 
+                                        Grid.Row="0" Grid.Column="2" 
+                                        Background="#FFFFFF" 
+                                        BorderBrush="{StaticResource AccentCyanBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="3"
+                                        Height="25"
+                                        Margin="0,5,0,5"/>
+                                
+                                <!-- Common (100+) -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Common (100+):" 
+                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,5,10,5"/>
+                                <TextBox x:Name="ApmColorCommonText" 
+                                         Grid.Row="1" Grid.Column="1" 
+                                         Text="00C8FF" 
+                                         VerticalAlignment="Center"
+                                         Margin="0,5,10,5"
+                                         TextChanged="ApmColorText_Changed"/>
+                                <Border x:Name="ApmColorCommonPreview" 
+                                        Grid.Row="1" Grid.Column="2" 
+                                        Background="#00C8FF" 
+                                        BorderBrush="{StaticResource AccentCyanBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="3"
+                                        Height="25"
+                                        Margin="0,5,0,5"/>
+                                
+                                <!-- Uncommon (200+) -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Uncommon (200+):" 
+                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,5,10,5"/>
+                                <TextBox x:Name="ApmColorUncommonText" 
+                                         Grid.Row="2" Grid.Column="1" 
+                                         Text="B400FF" 
+                                         VerticalAlignment="Center"
+                                         Margin="0,5,10,5"
+                                         TextChanged="ApmColorText_Changed"/>
+                                <Border x:Name="ApmColorUncommonPreview" 
+                                        Grid.Row="2" Grid.Column="2" 
+                                        Background="#B400FF" 
+                                        BorderBrush="{StaticResource AccentCyanBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="3"
+                                        Height="25"
+                                        Margin="0,5,0,5"/>
+                            </Grid>
+                            
+                            <!-- Rechte Spalte -->
+                            <Grid Grid.Column="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="70"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Rare (300+) -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Rare (300+):" 
+                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,5,10,5"/>
+                                <TextBox x:Name="ApmColorRareText" 
+                                         Grid.Row="0" Grid.Column="1" 
+                                         Text="FF3232" 
+                                         VerticalAlignment="Center"
+                                         Margin="0,5,10,5"
+                                         TextChanged="ApmColorText_Changed"/>
+                                <Border x:Name="ApmColorRarePreview" 
+                                        Grid.Row="0" Grid.Column="2" 
+                                        Background="#FF3232" 
+                                        BorderBrush="{StaticResource AccentCyanBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="3"
+                                        Height="25"
+                                        Margin="0,5,0,5"/>
+                                
+                                <!-- Epic (400+) -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Epic (400+):" 
+                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,5,10,5"/>
+                                <TextBox x:Name="ApmColorEpicText" 
+                                         Grid.Row="1" Grid.Column="1" 
+                                         Text="FFD700" 
+                                         VerticalAlignment="Center"
+                                         Margin="0,5,10,5"
+                                         TextChanged="ApmColorText_Changed"/>
+                                <Border x:Name="ApmColorEpicPreview" 
+                                        Grid.Row="1" Grid.Column="2" 
+                                        Background="#FFD700" 
+                                        BorderBrush="{StaticResource AccentCyanBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="3"
+                                        Height="25"
+                                        Margin="0,5,0,5"/>
+                                
+                                <!-- Legendary (500+) -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Legendary (500+):" 
+                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           Margin="0,5,10,5"/>
+                                <TextBox x:Name="ApmColorLegendaryText" 
+                                         Grid.Row="2" Grid.Column="1" 
+                                         Text="FF0080" 
+                                         VerticalAlignment="Center"
+                                         Margin="0,5,10,5"
+                                         TextChanged="ApmColorText_Changed"/>
+                                <Border x:Name="ApmColorLegendaryPreview" 
+                                        Grid.Row="2" Grid.Column="2" 
+                                        Background="#FF0080" 
+                                        BorderBrush="{StaticResource AccentCyanBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="3"
+                                        Height="25"
+                                        Margin="0,5,0,5"/>
+                            </Grid>
+                        </Grid>
+                        
+                        <TextBlock Text="Format: Hex ohne # (z.B. FFFFFF für Weiß)" 
+                                   FontSize="10" 
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,8,0,0"
+                                   Opacity="0.7"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Buttons -->
+                <Grid Grid.Row="7" Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="ToggleButton" 
+                            Content="▶ START" 
+                            Grid.Column="0"
+                            Margin="0,0,7,0"
+                            Style="{StaticResource ModernButton}"
+                            Click="ToggleButton_Click"/>
+                    
+                    <Button Content="↺ RESET" 
+                            Grid.Column="1"
+                            Margin="7,0,0,0"
+                            Style="{StaticResource ModernButton}"
+                            BorderBrush="{StaticResource AccentPurpleBrush}"
+                            Click="ResetButton_Click"/>
+                </Grid>
+
+                <!-- Footer -->
+                <TextBlock Grid.Row="8" 
+                           FontSize="10" 
+                           HorizontalAlignment="Center"
+                           Margin="0,20,0,10"
+                           Opacity="0.7">
+                    <TextBlock.Inlines>
+                        <Run Text="Made by " Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <Run Text="arimav8" Foreground="{StaticResource AccentCyanBrush}"/>
+                    </TextBlock.Inlines>
+                </TextBlock>
+                </Grid>
+        </Border>
+
+        <!-- Streamer Mode Layout - Mini Widget -->
+        <Border x:Name="StreamerModeContainer" Panel.ZIndex="1" 
+                CornerRadius="0" 
+                Visibility="Collapsed"
+                Background="Transparent">
+
+            <!-- Orbitron Font für futuristischen Gaming-Look -->
+            <Grid Margin="10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Kontur für APM Zahl (8 Richtungen - verbessert für cleanen Look) -->
+                <TextBlock x:Name="StreamerLiveApmOutline1" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="-1.5,0,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerLiveApmOutline2" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="1.5,0,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerLiveApmOutline3" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,-1.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerLiveApmOutline4" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,1.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerLiveApmOutline5" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="-1.5,-1.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerLiveApmOutline6" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="1.5,-1.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerLiveApmOutline7" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="-1.5,1.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerLiveApmOutline8" Grid.Column="0" Text="0" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="1.5,1.5,0,0" Opacity="1.0"/>
+                
+                <!-- Mega Schatten für Zahl (IDENTISCH mit !APM - beide rechtsbündig mit gleichen RenderTransform, 35% kleiner) -->
+                <TextBlock x:Name="StreamerLiveApmShadow5"
+                           Grid.Column="0"
+                           Text="0" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.15">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="4.6" Y="2"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerLiveApmShadow4"
+                           Grid.Column="0"
+                           Text="0" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.25">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="4.2" Y="1.6"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerLiveApmShadow3"
+                           Grid.Column="0"
+                           Text="0" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.4">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="3.9" Y="1.3"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerLiveApmShadow2"
+                           Grid.Column="0"
+                           Text="0" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.6">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="3.6" Y="1"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerLiveApmShadow"
+                           Grid.Column="0"
+                           Text="0" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.9">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="3.3" Y="0.7"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <!-- Live APM Zahl -->
+                <TextBlock x:Name="StreamerLiveApmText" 
+                           Grid.Column="0"
+                           Text="0" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#00ffff"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"/>
+                
+                <!-- Kontur für !APM (8 Richtungen - verbessert für cleanen Look, identisch mit APM-Zahl) -->
+                <TextBlock x:Name="StreamerApmLabelOutline1" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="6.5,-1.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerApmLabelOutline2" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="9.5,-1.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerApmLabelOutline3" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="8,-2.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerApmLabelOutline4" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="8,0.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerApmLabelOutline5" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="6.5,-2.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerApmLabelOutline6" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="9.5,-2.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerApmLabelOutline7" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="6.5,0.5,0,0" Opacity="1.0"/>
+                <TextBlock x:Name="StreamerApmLabelOutline8" Grid.Column="1" Text="!APM" FontSize="26" FontWeight="Black" FontFamily="pack://application:,,,/Fonts/#Orbitron" Foreground="#000000" VerticalAlignment="Center" Margin="9.5,0.5,0,0" Opacity="1.0"/>
+                
+                <!-- Mega Schatten für !APM (IDENTISCH mit APM-Zahl - beide rechtsbündig mit gleichen RenderTransform, 35% kleiner) -->
+                <TextBlock x:Name="StreamerApmLabelShadow5"
+                           Grid.Column="1" 
+                           Text="!APM" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.05">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="4.6" Y="2"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerApmLabelShadow4"
+                           Grid.Column="1" 
+                           Text="!APM" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.08">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="4.2" Y="1.6"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerApmLabelShadow3"
+                           Grid.Column="1" 
+                           Text="!APM" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.12">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="3.9" Y="1.3"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerApmLabelShadow2"
+                           Grid.Column="1" 
+                           Text="!APM" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.2">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="3.6" Y="1"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <TextBlock x:Name="StreamerApmLabelShadow1"
+                           Grid.Column="1" 
+                           Text="!APM" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#000000"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Opacity="0.3">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform X="3.3" Y="0.7"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <!-- !APM Text -->
+                <TextBlock x:Name="StreamerApmLabelText"
+                           Grid.Column="1" 
+                           Text="!APM" 
+                           FontSize="26" 
+                           FontWeight="Black"
+                           FontFamily="pack://application:,,,/Fonts/#Orbitron"
+                           Foreground="#ffffff"
+                           VerticalAlignment="Center"
+                           Margin="8,0,0,0"/>
+                
+                <!-- Hidden Peak für internes Tracking -->
+                <TextBlock x:Name="StreamerPeakApmText" Visibility="Collapsed"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
