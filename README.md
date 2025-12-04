@@ -8,13 +8,13 @@ A modern Actions-Per-Minute (APM) tracker for Windows that captures all keyboard
 -  **Keyboard Capture** - Counts all key presses
 -  **Mouse Capture** - Counts clicks (Left, Right, Middle, Extra) and mouse wheel
 -  **Statistics** - Peak APM, Average, Session time
-- 🎨 **Modern Design** - Dark, borderless UI with neon accents
-- 📌 **Always on Top** - Stays always in foreground
-- 🎯 **Streamer Mode** - Compact overlay widget for streaming
-- 🎨 **Customizable Colors** - Customize APM colors for different ranges
-- 🔊 **Click Sounds** - Optional click sound feedback
-- 💾 **Settings Persistence** - All settings are saved automatically
-- 🔄 **Auto-Updates** - Automatically checks for updates on startup
+-  **Modern Design** - Dark, borderless UI with neon accents
+-  **Always on Top** - Stays always in foreground
+-  **Streamer Mode** - Compact overlay widget for streaming
+-  **Customizable Colors** - Customize APM colors for different ranges
+-  **Click Sounds** - Optional click sound feedback
+-  **Settings Persistence** - All settings are saved automatically
+-  **Auto-Updates** - Automatically checks for updates on startup
 
 ## Requirements
 
