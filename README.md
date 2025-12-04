@@ -40,6 +40,35 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
 
 The executable will be in `bin/Release/net8.0-windows/publish/ApmTracker.exe`
 
+## Folder Structure
+📁 YourFolder/
+  ├── ApmTracker.exe          (The main application)
+  ├── settings.json           (Created automatically on first start)
+  └── Sounds/                 (Optional - created automatically)
+      ├── README.txt          (Created automatically with info)
+      └── YourSounds.wav      (Optional: Custom WAV/MP3/OGG files)
+
+Important Notes:
+1. Fonts: Already embedded in the EXE. No separate Fonts folder needed.
+2. Sounds Folder:
+* Created automatically when the app starts for the first time
+* Optional: Place custom WAV/MP3/OGG files here
+* The app automatically detects up to 10 sound files
+* Sounds appear in the app after restart
+3. settings.json:
+* Created automatically on first start
+* Stores all settings (position, colors, sounds, etc.)
+* Located in the same folder as the EXE
+4. Minimal Structure (EXE only):
+```bash
+   ApmTracker.exe
+```
+Everything else is created automatically when needed.
+Summary:
+* Only the EXE is required
+* Sounds/ and settings.json are created automatically
+* Fonts are embedded in the EXE
+* The app works standalone without additional files
 ## Usage
 
 - **START/PAUSE** - Start or pause tracking
