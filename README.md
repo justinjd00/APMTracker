@@ -42,10 +42,15 @@ The executable will be in `bin/Release/net8.0-windows/publish/ApmTracker.exe`
 
 ## Folder Structure
 📁 YourFolder/
+
   ├── ApmTracker.exe          (The main application)
+  
   ├── settings.json           (Created automatically on first start)
+  
   └── Sounds/                 (Optional - created automatically)
+  
       ├── README.txt          (Created automatically with info)
+      
       └── YourSounds.wav      (Optional: Custom WAV/MP3/OGG files)
 
 Important Notes:
