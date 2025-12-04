@@ -772,7 +772,7 @@
                            Opacity="0.7">
                     <TextBlock.Inlines>
                         <Run Text="Made by " Foreground="{StaticResource TextSecondaryBrush}"/>
-                        <Run Text="arimav8" Foreground="{StaticResource AccentCyanBrush}"/>
+                        <Run Text="arimav8" Foreground="{StaticResource AccentPurpleBrush}"/>
                     </TextBlock.Inlines>
                 </TextBlock>
                 </Grid>
