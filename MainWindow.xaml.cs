@@ -1072,8 +1072,11 @@ namespace ApmTracker
                         updateIconTransform.BeginAnimation(RotateTransform.AngleProperty, null);
                     }
 
+                    var logPath = Path.Combine(Path.GetTempPath(), "ApmTracker_Update.log");
+                    var logInfo = File.Exists(logPath) ? $"\n\nCheck log file for details:\n{logPath}" : "";
+                    
                     System.Windows.MessageBox.Show(
-                        $"Failed to install update.\n\n" +
+                        $"Failed to install update.{logInfo}\n\n" +
                         $"Please download manually from:\n" +
                         $"https://github.com/justinjd00/APMTracker/releases/latest",
                         "Update Failed",
