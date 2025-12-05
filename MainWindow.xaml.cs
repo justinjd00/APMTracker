@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 namespace ApmTracker
 {
@@ -37,11 +38,12 @@ namespace ApmTracker
         private int _lastTotalActions = -1;
         private int _lastKeyboardActions = -1;
         private int _lastMouseActions = -1;
+        private int _lastMinApm = -1;
         private string _lastSessionTime = string.Empty;
         
         private static readonly Dictionary<int, Brush> _colorCache = new();
         private static AppSettings? _apmColorSettings = null;
-        private const double NormalHeight = 1110;
+        private const double NormalHeight = 1250;
         private const double NormalWidth = 650;
         
         private string _streamerFont = "pack://application:,,,/Fonts/#Orbitron";
@@ -87,7 +89,7 @@ namespace ApmTracker
             _isInitialized = true;
             LoadSettings();
             LoadSoundOptions();
-            CheckForUpdatesAsync();
+            _ = CheckForUpdatesAsync(); // Fire and forget - keine await nötig
         }
         private void LoadSettings()
         {
@@ -372,6 +374,14 @@ namespace ApmTracker
                 SessionTimeText.Text = sessionTime;
                 _lastSessionTime = sessionTime;
             }
+            
+            var minApm = _apmCalculator.MinApm;
+            if (minApm != _lastMinApm)
+            {
+                MinApmText.Text = minApm.ToString();
+                _lastMinApm = minApm;
+            }
+            
             int currentMilestone = GetMilestone(currentApm);
             if (currentMilestone > _lastMilestone && _lastMilestone >= 0)
             {
@@ -635,6 +645,58 @@ namespace ApmTracker
             _apmCalculator.Reset();
             UpdateUI();
         }
+        
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "CSV Dateien (*.csv)|*.csv|JSON Dateien (*.json)|*.json|Alle Dateien (*.*)|*.*",
+                    FilterIndex = 1,
+                    FileName = $"APM_Export_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}",
+                    DefaultExt = "csv"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    bool success = false;
+                    string message = "";
+
+                    if (saveDialog.FilterIndex == 1 || saveDialog.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                    {
+                        success = ExportManager.ExportToCsv(_apmCalculator, saveDialog.FileName);
+                        message = success ? "Statistiken erfolgreich als CSV exportiert!" : "Fehler beim CSV-Export.";
+                    }
+                    else if (saveDialog.FilterIndex == 2 || saveDialog.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        success = ExportManager.ExportToJson(_apmCalculator, saveDialog.FileName);
+                        message = success ? "Statistiken erfolgreich als JSON exportiert!" : "Fehler beim JSON-Export.";
+                    }
+
+                    System.Windows.MessageBox.Show(
+                        message,
+                        success ? "Export erfolgreich" : "Export Fehler",
+                        MessageBoxButton.OK,
+                        success ? MessageBoxImage.Information : MessageBoxImage.Error);
+
+                    if (success)
+                    {
+                        // Ordner im Explorer öffnen
+                        Process.Start("explorer.exe", $"/select,\"{saveDialog.FileName}\"");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Fehler beim Export:\n\n{ex.Message}",
+                    "Export Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+        
         private void StreamerModeButton_Click(object sender, RoutedEventArgs e)
         {
             ToggleStreamerMode();

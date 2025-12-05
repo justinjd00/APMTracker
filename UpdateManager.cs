@@ -98,7 +98,7 @@ namespace ApmTracker
             );
         }
 
-        public static async Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, string version, IProgress<string> progress = null)
+        public static async Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, string version, IProgress<string>? progress = null)
         {
             var logPath = Path.Combine(Path.GetTempPath(), "ApmTracker_Update.log");
             
@@ -139,6 +139,12 @@ namespace ApmTracker
                 }
 
                 var currentDir = Path.GetDirectoryName(currentExe);
+                if (string.IsNullOrEmpty(currentDir))
+                {
+                    WriteLog("ERROR: Could not determine current directory");
+                    progress?.Report("Error: Could not determine current directory");
+                    return false;
+                }
                 var tempPath = Path.Combine(currentDir, $"ApmTracker_{version}_new.exe");
                 
                 WriteLog($"Download URL: {downloadUrl}");
